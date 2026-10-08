@@ -1,0 +1,6 @@
+{
+  "name": "Gachi Ramen Radar - Japan Ramen Store Finder",
+  "description": "Mobile-first travel application to find authentic ramen stores near your location in Japan, powered by the Gachi-Ramen MCP nationwide database.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

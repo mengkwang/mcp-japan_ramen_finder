@@ -1,0 +1,45 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+/* Hide scrollbars for horizontal filter tab scrollers */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Custom leaflet map adjustments */
+.leaflet-container {
+  background: #0c0a09 !important;
+  font-family: inherit;
+}
+
+.leaflet-bar a {
+  background-color: #1c1917 !important;
+  color: #fafaf9 !important;
+  border-bottom-color: #292524 !important;
+}
+
+.leaflet-bar a:hover {
+  background-color: #292524 !important;
+  color: #f59e0b !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: #1c1917 !important;
+  color: #fafaf9 !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid #44403c !important;
+}
+
+.leaflet-popup-tip {
+  background: #1c1917 !important;
+}
+
+/* Touch action optimization for mobile */
+html, body {
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+}
