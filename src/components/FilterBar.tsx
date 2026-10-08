@@ -4,11 +4,7 @@ import {
   Sparkles, 
   Compass, 
   Footprints, 
-  CreditCard, 
-  Flame, 
-  Store,
-  X,
-  SlidersHorizontal
+  X
 } from 'lucide-react';
 import { RAMEN_STYLES } from '../data/ramenStyles';
 import { RamenStyleKey } from '../types/ramen';
@@ -22,12 +18,6 @@ interface FilterBarProps {
   onSelectStyle: (style: RamenStyleKey) => void;
   radiusMeters: number;
   onSelectRadius: (meters: number) => void;
-  cashlessOnly: boolean;
-  onToggleCashless: () => void;
-  specialistOnly: boolean;
-  onToggleSpecialist: () => void;
-  spicyOnly: boolean;
-  onToggleSpicy: () => void;
   totalCount: number;
   onTriggerSearch: () => void;
   isLoading: boolean;
@@ -42,12 +32,6 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   onSelectStyle,
   radiusMeters,
   onSelectRadius,
-  cashlessOnly,
-  onToggleCashless,
-  specialistOnly,
-  onToggleSpecialist,
-  spicyOnly,
-  onToggleSpicy,
   totalCount,
   onTriggerSearch,
   isLoading,
@@ -139,104 +123,67 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 
       {/* Walking Radius Filter (Visible in Nearby Mode) */}
       {searchMode === 'nearby' && (
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-0.5">
-          <div className="flex items-center gap-1 text-[11px] font-semibold text-stone-400 flex-shrink-0">
-            <Footprints className="w-3.5 h-3.5 text-amber-500" />
-            <span>Radius:</span>
+        <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar pt-0.5">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 text-[11px] font-semibold text-stone-400 flex-shrink-0">
+              <Footprints className="w-3.5 h-3.5 text-amber-500" />
+              <span>Radius:</span>
+            </div>
+            <div className="flex items-center gap-1.5 flex-nowrap">
+              {radiusOptions.map((opt) => (
+                <button
+                  key={opt.meters}
+                  onClick={() => onSelectRadius(opt.meters)}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border whitespace-nowrap transition-all ${
+                    radiusMeters === opt.meters
+                      ? 'bg-amber-500/15 border-amber-500/60 text-amber-300 font-bold'
+                      : 'bg-stone-950/80 border-stone-800/80 text-stone-400 hover:text-stone-200'
+                  }`}
+                >
+                  <span>{opt.label}</span>
+                  <span className="text-[10px] text-stone-400 font-normal">({opt.sub})</span>
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex items-center gap-1.5 flex-nowrap">
-            {radiusOptions.map((opt) => (
-              <button
-                key={opt.meters}
-                onClick={() => onSelectRadius(opt.meters)}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border whitespace-nowrap transition-all ${
-                  radiusMeters === opt.meters
-                    ? 'bg-amber-500/15 border-amber-500/60 text-amber-300 font-bold'
-                    : 'bg-stone-950/80 border-stone-800/80 text-stone-400 hover:text-stone-200'
-                }`}
-              >
-                <span>{opt.label}</span>
-                <span className="text-[10px] text-stone-400 font-normal">({opt.sub})</span>
-              </button>
-            ))}
+
+          <div className="text-[11px] text-stone-400 font-mono hidden sm:block">
+            Found <span className="font-bold text-amber-400">{totalCount}</span> stores
           </div>
         </div>
       )}
 
       {/* Ramen Styles (Keito Lineage) Scrollable Bar */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-0.5">
-        <span className="text-[11px] font-semibold text-stone-400 flex-shrink-0">
-          Style:
-        </span>
-        <div className="flex items-center gap-1.5 flex-nowrap">
-          {RAMEN_STYLES.map((style) => {
-            const isActive = selectedStyle === style.key;
-            return (
-              <button
-                key={style.key}
-                onClick={() => onSelectStyle(style.key)}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium border whitespace-nowrap transition-all ${
-                  isActive
-                    ? 'bg-amber-500 text-stone-950 border-amber-400 font-bold shadow-sm'
-                    : 'bg-stone-950/60 border-stone-800 text-stone-300 hover:bg-stone-800'
-                }`}
-              >
-                <span>{style.label}</span>
-                <span className={`text-[10px] ${isActive ? 'text-stone-900' : 'text-amber-500'}`}>
-                  {style.label_ja}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Traveler Preference Toggles */}
-      <div className="flex items-center justify-between gap-2 pt-1 border-t border-stone-800/60 flex-wrap">
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Specialist toggle */}
-          <button
-            onClick={onToggleSpecialist}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs border transition-all ${
-              specialistOnly
-                ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-300 font-semibold'
-                : 'bg-stone-950/40 border-stone-800/80 text-stone-400 hover:text-stone-200'
-            }`}
-          >
-            <Store className="w-3.5 h-3.5" />
-            <span>Specialist (専門店) Only</span>
-          </button>
-
-          {/* Cashless OK */}
-          <button
-            onClick={onToggleCashless}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs border transition-all ${
-              cashlessOnly
-                ? 'bg-blue-500/15 border-blue-500/50 text-blue-300 font-semibold'
-                : 'bg-stone-950/40 border-stone-800/80 text-stone-400 hover:text-stone-200'
-            }`}
-          >
-            <CreditCard className="w-3.5 h-3.5" />
-            <span>Cashless / Card OK</span>
-          </button>
-
-          {/* Spicy Signature */}
-          <button
-            onClick={onToggleSpicy}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs border transition-all ${
-              spicyOnly
-                ? 'bg-rose-500/15 border-rose-500/50 text-rose-300 font-semibold'
-                : 'bg-stone-950/40 border-stone-800/80 text-stone-400 hover:text-stone-200'
-            }`}
-          >
-            <Flame className="w-3.5 h-3.5" />
-            <span>Spicy Focus</span>
-          </button>
+      <div className="flex items-center justify-between gap-2 pt-0.5">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar flex-1">
+          <span className="text-[11px] font-semibold text-stone-400 flex-shrink-0">
+            Style:
+          </span>
+          <div className="flex items-center gap-1.5 flex-nowrap">
+            {RAMEN_STYLES.map((style) => {
+              const isActive = selectedStyle === style.key;
+              return (
+                <button
+                  key={style.key}
+                  onClick={() => onSelectStyle(style.key)}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium border whitespace-nowrap transition-all ${
+                    isActive
+                      ? 'bg-amber-500 text-stone-950 border-amber-400 font-bold shadow-sm'
+                      : 'bg-stone-950/60 border-stone-800 text-stone-300 hover:bg-stone-800'
+                  }`}
+                >
+                  <span>{style.label}</span>
+                  <span className={`text-[10px] ${isActive ? 'text-stone-900' : 'text-amber-500'}`}>
+                    {style.label_ja}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Total Result Counter */}
-        <div className="text-[11px] text-stone-400 font-mono">
-          Showing <span className="font-bold text-amber-400">{totalCount}</span> stores
+        <div className="text-[11px] text-stone-400 font-mono sm:hidden flex-shrink-0">
+          <span className="font-bold text-amber-400">{totalCount}</span> shops
         </div>
       </div>
     </div>

@@ -3,19 +3,18 @@ import {
   X, 
   MapPin, 
   Train, 
-  CreditCard, 
-  Coins, 
-  Calendar, 
   Bookmark, 
   ExternalLink, 
   Copy, 
   Check, 
   Volume2, 
-  UtensilsCrossed,
   ShieldCheck,
   Navigation,
   Sparkles,
-  Info
+  Compass,
+  Store,
+  CreditCard,
+  Coins
 } from 'lucide-react';
 import { RamenShop } from '../types/ramen';
 import { getStyleInfo } from '../data/ramenStyles';
@@ -134,9 +133,16 @@ export const RamenDetailModal: React.FC<RamenDetailModalProps> = ({
           <div>
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h2 className="text-xl sm:text-2xl font-black text-stone-100 tracking-tight">
-                  {shop.name}
-                </h2>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-xl sm:text-2xl font-black text-stone-100 tracking-tight">
+                    {shop.name}
+                  </h2>
+                  {shop.chain && (
+                    <span className="text-xs font-semibold text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded-md border border-amber-500/30">
+                      {shop.chain}
+                    </span>
+                  )}
+                </div>
                 {shop.name_en && (
                   <p className="text-sm text-stone-400 font-medium mt-0.5">
                     {shop.name_en}
@@ -195,27 +201,6 @@ export const RamenDetailModal: React.FC<RamenDetailModalProps> = ({
             </div>
           )}
 
-          {/* Signature Menu Items */}
-          {shop.menu_signature && shop.menu_signature.length > 0 && (
-            <div className="p-3.5 rounded-xl bg-stone-950/60 border border-stone-800 space-y-2">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-stone-300">
-                <UtensilsCrossed className="w-4 h-4 text-amber-500" />
-                <span>Signature Dishes & Menu Highlights</span>
-              </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                {shop.menu_signature.map((item, idx) => (
-                  <span
-                    key={idx}
-                    className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-stone-900 border border-stone-700/80 text-xs text-amber-200 font-medium"
-                  >
-                    <span>🍜</span>
-                    <span>{item}</span>
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Address & Train Station Access */}
           <div className="p-3.5 rounded-xl bg-stone-950/60 border border-stone-800 space-y-3">
             <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">
@@ -269,51 +254,53 @@ export const RamenDetailModal: React.FC<RamenDetailModalProps> = ({
                 )}
               </button>
             </div>
+
+            {/* Coordinates Reference */}
+            {shop.lat && shop.lng && (
+              <div className="flex items-center gap-2 pt-1 text-[11px] text-stone-400 font-mono">
+                <Compass className="w-3.5 h-3.5 text-stone-500" />
+                <span>GSI Geo: {shop.lat.toFixed(5)}, {shop.lng.toFixed(5)}</span>
+              </div>
+            )}
           </div>
 
-          {/* Payment Info & Venue Details */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Payment Method */}
-            <div className="p-3 rounded-xl bg-stone-950/60 border border-stone-800">
-              <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                <CreditCard className="w-3.5 h-3.5 text-amber-500" />
-                <span>Payment Accepted</span>
-              </div>
-              {shop.payment?.cash_only ? (
-                <div className="text-xs text-amber-300 font-medium flex items-center gap-1.5">
-                  <Coins className="w-4 h-4 text-amber-400" />
-                  <span>現金のみ (Cash Only - Carry Japanese Yen!)</span>
+          {/* Conditional Attributes only when adjudicated in dataset */}
+          {(shop.shop_type || (shop.payment && (shop.payment.cash_only || shop.payment.card_accepted))) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {shop.payment && (shop.payment.cash_only || shop.payment.card_accepted) && (
+                <div className="p-3 rounded-xl bg-stone-950/60 border border-stone-800">
+                  <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                    <CreditCard className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Payment Method</span>
+                  </div>
+                  {shop.payment.cash_only ? (
+                    <div className="text-xs text-amber-300 font-medium flex items-center gap-1.5">
+                      <Coins className="w-4 h-4 text-amber-400" />
+                      <span>現金のみ (Cash Only)</span>
+                    </div>
+                  ) : (
+                    <div className="text-xs text-emerald-300 font-medium flex items-center gap-1.5">
+                      <CreditCard className="w-4 h-4 text-emerald-400" />
+                      <span>キャッシュレス対応 (Cards / IC Accepted)</span>
+                    </div>
+                  )}
                 </div>
-              ) : shop.payment?.card_accepted || shop.payment?.state === 'cashless_ok' ? (
-                <div className="text-xs text-emerald-300 font-medium flex items-center gap-1.5">
-                  <CreditCard className="w-4 h-4 text-emerald-400" />
-                  <span>キャッシュレス対応 (Cards / IC Accepted)</span>
-                </div>
-              ) : (
-                <div className="text-xs text-stone-400">
-                  Standard Shokken Ticket Machine (prepare ¥1,000 bills & 100/500 yen coins)
+              )}
+
+              {shop.shop_type && (
+                <div className="p-3 rounded-xl bg-stone-950/60 border border-stone-800">
+                  <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                    <Store className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Classification</span>
+                  </div>
+                  <div className="text-xs text-stone-300">
+                    {shop.shop_type === 'senmon' && 'ラーメン専門店 (Ramen Specialist)'}
+                    {shop.shop_type === 'machichuka' && '町中華 (Neighborhood Chinese Diner)'}
+                  </div>
                 </div>
               )}
             </div>
-
-            {/* Venue Type & Established */}
-            <div className="p-3 rounded-xl bg-stone-950/60 border border-stone-800">
-              <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5 text-amber-500" />
-                <span>Store Classification</span>
-              </div>
-              <div className="text-xs text-stone-300">
-                {shop.shop_type === 'senmon' && '🍜 Ramen Specialist Store (ラーメン専門店)'}
-                {shop.shop_type === 'machichuka' && '🥟 Machi-Chuka Neighborhood Diner (町中華)'}
-                {!shop.shop_type && 'Independent Ramen Store'}
-                {shop.opened_on && (
-                  <span className="text-stone-400 block text-[11px] mt-0.5">
-                    Opened: {shop.opened_on}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
+          )}
 
           {/* Quick Japanese Ordering Helper Phrases */}
           <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-2">

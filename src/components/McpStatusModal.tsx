@@ -2,14 +2,12 @@ import React, { useState } from 'react';
 import { 
   X, 
   Server, 
-  CheckCircle, 
-  AlertTriangle, 
-  Activity, 
-  Key, 
-  ExternalLink, 
+  ShieldCheck, 
   RefreshCw,
   Database,
-  Layers
+  Layers,
+  Sparkles,
+  CheckCircle2
 } from 'lucide-react';
 import { ramenMcpClient } from '../services/mcpClient';
 import { McpServerStatus } from '../types/ramen';
@@ -27,19 +25,10 @@ export const McpStatusModal: React.FC<McpStatusModalProps> = ({
   status,
   onRefreshStatus,
 }) => {
-  const [tokenInput, setTokenInput] = useState(ramenMcpClient.getSmitheryToken());
-  const [saveSuccess, setSaveSuccess] = useState(false);
   const [pinging, setPinging] = useState(false);
   const [pingResult, setPingResult] = useState<string | null>(null);
 
   if (!isOpen) return null;
-
-  const handleSaveToken = () => {
-    ramenMcpClient.setSmitheryToken(tokenInput);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 2000);
-    onRefreshStatus();
-  };
 
   const handleTestPing = async () => {
     setPinging(true);
@@ -48,7 +37,7 @@ export const McpStatusModal: React.FC<McpStatusModalProps> = ({
     try {
       await ramenMcpClient.ping();
       const elapsed = Math.round(performance.now() - start);
-      setPingResult(`Success: Pong received in ${elapsed}ms`);
+      setPingResult(`Success: Pong response in ${elapsed}ms`);
       onRefreshStatus();
     } catch (err: any) {
       setPingResult(`Ping failed: ${err.message}`);
@@ -72,10 +61,10 @@ export const McpStatusModal: React.FC<McpStatusModalProps> = ({
             <Server className="w-5 h-5 text-amber-500" />
             <div>
               <h2 className="text-base font-bold text-stone-100">
-                Gachi-Ramen MCP Connection Inspector
+                Gachi-Ramen MCP Connection (Free Tier)
               </h2>
               <p className="text-[11px] text-stone-400">
-                Nationwide 62,000+ Ramen Shops Protocol Endpoint
+                Official No-Auth Free Service for 62,000+ Japanese Ramen Shops
               </p>
             </div>
           </div>
@@ -89,49 +78,38 @@ export const McpStatusModal: React.FC<McpStatusModalProps> = ({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
-          {/* Active Status Card */}
+          {/* Active Free Tier Service Card */}
           <div className="p-4 rounded-xl bg-stone-950/70 border border-stone-800 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-stone-400 uppercase tracking-wider">
-                Connection Status
+                Active Service Engine
               </span>
-              <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                status.connected 
-                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' 
-                  : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
-              }`}>
-                <span className={`w-2 h-2 rounded-full ${status.connected ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                {status.connected ? 'Online & Ready' : 'Connecting'}
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                Free Tier Live & Connected
               </span>
             </div>
 
             <div className="space-y-2 text-xs">
               <div className="flex flex-col gap-0.5">
-                <span className="text-stone-400">Smithery Endpoint:</span>
-                <span className="font-mono text-stone-200 break-all bg-stone-900 p-2 rounded border border-stone-800">
-                  https://server.smithery.ai/eng213035/gachi-ramen
-                </span>
-              </div>
-
-              <div className="flex flex-col gap-0.5">
-                <span className="text-stone-400">Live Engine Fallback / Direct:</span>
-                <span className="font-mono text-stone-200 break-all bg-stone-900 p-2 rounded border border-stone-800">
+                <span className="text-stone-400">Live Free-Tier Endpoint:</span>
+                <span className="font-mono text-stone-200 break-all bg-stone-900 p-2 rounded border border-stone-800 select-all">
                   https://ramen.gachi-tokusuru.com/mcp
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 pt-2">
+              <div className="grid grid-cols-2 gap-2 pt-1">
                 <div className="bg-stone-900 p-2.5 rounded-lg border border-stone-800">
-                  <div className="text-[10px] text-stone-400 uppercase">Provider Route</div>
-                  <div className="text-xs font-bold text-amber-400 capitalize">
-                    {status.provider === 'smithery' ? 'Smithery Proxy' : 'Live Gachi Engine'}
+                  <div className="text-[10px] text-stone-400 uppercase">Service Plan</div>
+                  <div className="text-xs font-bold text-amber-400">
+                    Free Tier (No Auth)
                   </div>
                 </div>
 
                 <div className="bg-stone-900 p-2.5 rounded-lg border border-stone-800">
-                  <div className="text-[10px] text-stone-400 uppercase">Response Latency</div>
+                  <div className="text-[10px] text-stone-400 uppercase">Latency</div>
                   <div className="text-xs font-bold text-emerald-400 font-mono">
-                    {status.latencyMs !== null ? `${status.latencyMs} ms` : 'Testing...'}
+                    {status.latencyMs !== null ? `${status.latencyMs} ms` : 'Active'}
                   </div>
                 </div>
               </div>
@@ -145,7 +123,7 @@ export const McpStatusModal: React.FC<McpStatusModalProps> = ({
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-medium transition-colors disabled:opacity-50"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${pinging ? 'animate-spin text-amber-500' : ''}`} />
-                <span>Test MCP Ping</span>
+                <span>Test Live Ping</span>
               </button>
 
               {pingResult && (
@@ -156,63 +134,73 @@ export const McpStatusModal: React.FC<McpStatusModalProps> = ({
             </div>
           </div>
 
-          {/* MCP Tools Available */}
+          {/* Dataset Freshness & Coverage */}
           <div className="p-4 rounded-xl bg-stone-950/70 border border-stone-800 space-y-2.5">
             <div className="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider">
-              <Layers className="w-4 h-4 text-amber-500" />
-              <span>Registered MCP Tools</span>
+              <Database className="w-4 h-4 text-amber-500" />
+              <span>Free Dataset Status & Coverage</span>
             </div>
 
-            <div className="space-y-1.5 text-xs">
-              <div className="p-2 rounded bg-stone-900 border border-stone-800">
-                <div className="font-mono font-bold text-stone-200">tools/call : search_ramen</div>
-                <div className="text-stone-400 text-[11px]">
-                  Geo-radius search by lat/lng, keito lineage, prefecture, city, and shop name substring.
-                </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="p-2.5 rounded bg-stone-900 border border-stone-800">
+                <div className="text-[10px] text-stone-400">Dataset Build</div>
+                <div className="font-bold text-stone-200 font-mono">2026-09-26</div>
               </div>
 
-              <div className="p-2 rounded bg-stone-900 border border-stone-800">
-                <div className="font-mono font-bold text-stone-200">tools/call : vibe_search</div>
-                <div className="text-stone-400 text-[11px]">
-                  Semantic craving search via bge-m3 embeddings ("rich creamy pork", "yuzu shio", "spicy tantanmen").
-                </div>
+              <div className="p-2.5 rounded bg-stone-900 border border-stone-800">
+                <div className="text-[10px] text-stone-400">Total Store Records</div>
+                <div className="font-bold text-amber-400 font-mono">62,000+ Nationwide</div>
               </div>
 
-              <div className="p-2 rounded bg-stone-900 border border-stone-800">
-                <div className="font-mono font-bold text-stone-200">tools/call : get_ramen_shop</div>
-                <div className="text-stone-400 text-[11px]">
-                  Lookup complete shop profile with menu signatures, nearest station, and payment methods.
-                </div>
+              <div className="p-2.5 rounded bg-stone-900 border border-stone-800">
+                <div className="text-[10px] text-stone-400">Prefecture Coverage</div>
+                <div className="font-bold text-stone-200">All 47 Prefectures</div>
+              </div>
+
+              <div className="p-2.5 rounded bg-stone-900 border border-stone-800">
+                <div className="text-[10px] text-stone-400">Liveness Tracking</div>
+                <div className="font-bold text-emerald-400">Monthly Re-crawl</div>
               </div>
             </div>
           </div>
 
-          {/* Optional Smithery API Key Input */}
-          <div className="p-4 rounded-xl bg-stone-950/70 border border-stone-800 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-bold text-stone-300 uppercase tracking-wider">
-                <Key className="w-4 h-4 text-amber-500" />
-                <span>Smithery Bearer Token (Optional)</span>
-              </div>
+          {/* Supported Free-Tier Tools */}
+          <div className="p-4 rounded-xl bg-stone-950/70 border border-stone-800 space-y-2.5">
+            <div className="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider">
+              <Layers className="w-4 h-4 text-amber-500" />
+              <span>Active Free Tools Available</span>
             </div>
-            <p className="text-xs text-stone-400">
-              If you have a personal Smithery authorization token, enter it here. Otherwise, the app automatically connects seamlessly to the live Gachi-Ramen engine.
-            </p>
 
-            <div className="flex gap-2">
-              <input
-                type="password"
-                placeholder="Bearer token (e.g. sm_live_...)"
-                value={tokenInput}
-                onChange={(e) => setTokenInput(e.target.value)}
-                className="flex-1 px-3 py-2 bg-stone-900 border border-stone-800 rounded-lg text-xs text-stone-100 placeholder:text-stone-600 focus:outline-none focus:border-amber-500 font-mono"
-              />
-              <button
-                onClick={handleSaveToken}
-                className="px-3 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-stone-950 text-xs font-bold transition-colors"
-              >
-                {saveSuccess ? 'Saved!' : 'Save'}
-              </button>
+            <div className="space-y-1.5 text-xs">
+              <div className="p-2 rounded bg-stone-900 border border-stone-800 flex items-start gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-mono font-bold text-stone-200">search_ramen</div>
+                  <div className="text-stone-400 text-[11px]">
+                    Geo-radius query by lat/lng, walking distance, keito lineage, and shop name matching.
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-2 rounded bg-stone-900 border border-stone-800 flex items-start gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-mono font-bold text-stone-200">vibe_search</div>
+                  <div className="text-stone-400 text-[11px]">
+                    Semantic craving search via bge-m3 embeddings (English & Japanese food descriptors).
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-2 rounded bg-stone-900 border border-stone-800 flex items-start gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-mono font-bold text-stone-200">get_ramen_shop</div>
+                  <div className="text-stone-400 text-[11px]">
+                    Lookup official address, nearest train station exit distance, and style taxonomy.
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

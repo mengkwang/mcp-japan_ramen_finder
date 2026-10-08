@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from './components/Header';
 import { FilterBar } from './components/FilterBar';
 import { RamenCard } from './components/RamenCard';
@@ -11,15 +11,12 @@ import { BookmarksModal } from './components/BookmarksModal';
 import { ramenMcpClient } from './services/mcpClient';
 import { RamenShop, RamenStyleKey, McpServerStatus } from './types/ramen';
 import { 
-  Soup, 
   Map as MapIcon, 
   ListFilter, 
   Bookmark, 
   BookOpen, 
-  RefreshCw, 
   AlertCircle,
   Compass,
-  Sparkles,
   ArrowUp
 } from 'lucide-react';
 
@@ -54,9 +51,6 @@ export default function App() {
   const [query, setQuery] = useState('');
   const [selectedStyle, setSelectedStyle] = useState<RamenStyleKey>('all');
   const [radiusMeters, setRadiusMeters] = useState(1500);
-  const [specialistOnly, setSpecialistOnly] = useState(false);
-  const [cashlessOnly, setCashlessOnly] = useState(false);
-  const [spicyOnly, setSpicyOnly] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   // Data & Results
@@ -140,25 +134,16 @@ export default function App() {
           radius_m: radiusMeters,
           keito: selectedStyle !== 'all' ? selectedStyle : undefined,
           q: query.trim() || undefined,
-          shop_type: specialistOnly ? 'senmon' : undefined,
-          spice_level: spicyOnly ? 'spicy' : undefined,
           limit: 40,
         });
 
-        let filtered = result.shops || [];
-
-        // Apply cashless filter client-side if required
-        if (cashlessOnly) {
-          filtered = filtered.filter(
-            (s) => s.payment?.card_accepted || s.payment?.state === 'cashless_ok'
-          );
-        }
+        const list = result.shops || [];
 
         // Sort by distance ascending
-        filtered.sort((a, b) => (a.distance_m ?? 99999) - (b.distance_m ?? 99999));
+        list.sort((a, b) => (a.distance_m ?? 99999) - (b.distance_m ?? 99999));
 
-        setShops(filtered);
-        setTotalCount(result.total_matched || filtered.length);
+        setShops(list);
+        setTotalCount(result.total_matched || list.length);
       }
 
       refreshMcpStatus();
@@ -176,9 +161,6 @@ export default function App() {
     currentLocation,
     radiusMeters,
     selectedStyle,
-    specialistOnly,
-    cashlessOnly,
-    spicyOnly,
     refreshMcpStatus,
   ]);
 
@@ -190,9 +172,6 @@ export default function App() {
     currentLocation.lng,
     radiusMeters,
     selectedStyle,
-    specialistOnly,
-    cashlessOnly,
-    spicyOnly,
     searchMode,
   ]);
 
@@ -254,12 +233,6 @@ export default function App() {
         onSelectStyle={setSelectedStyle}
         radiusMeters={radiusMeters}
         onSelectRadius={setRadiusMeters}
-        cashlessOnly={cashlessOnly}
-        onToggleCashless={() => setCashlessOnly((prev) => !prev)}
-        specialistOnly={specialistOnly}
-        onToggleSpecialist={() => setSpecialistOnly((prev) => !prev)}
-        spicyOnly={spicyOnly}
-        onToggleSpicy={() => setSpicyOnly((prev) => !prev)}
         totalCount={shops.length}
         onTriggerSearch={fetchShops}
         isLoading={isLoading}
@@ -273,7 +246,7 @@ export default function App() {
             <div className="flex items-start gap-3 p-3.5 rounded-xl bg-rose-950/40 border border-rose-800/60 text-rose-300 text-xs">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-rose-400" />
               <div className="flex-1">
-                <div className="font-bold">MCP Connection Notice</div>
+                <div className="font-bold">MCP Notice</div>
                 <div>{errorMessage}</div>
               </div>
               <button
@@ -341,13 +314,10 @@ export default function App() {
                     onClick={() => {
                       setRadiusMeters(5000);
                       setSelectedStyle('all');
-                      setSpecialistOnly(false);
-                      setCashlessOnly(false);
-                      setSpicyOnly(false);
                     }}
                     className="w-full sm:w-auto px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs transition-colors"
                   >
-                    Expand Radius to 5km & Reset Filters
+                    Expand Radius to 5km
                   </button>
                   <button
                     onClick={() => setIsLocationPickerOpen(true)}
