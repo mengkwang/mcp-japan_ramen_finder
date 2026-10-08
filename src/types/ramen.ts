@@ -71,12 +71,11 @@ export interface RamenStyleDefinition {
 }
 
 export interface McpServerStatus {
+  serverName: string;
   endpoint: string;
-  provider: 'smithery' | 'live-engine';
   connected: boolean;
   latencyMs: number | null;
   totalMatched?: number;
   lastChecked: string;
-  smitheryTokenConfigured: boolean;
   error?: string | null;
 }

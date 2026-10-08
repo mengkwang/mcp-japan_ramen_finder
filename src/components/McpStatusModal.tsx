@@ -2,14 +2,13 @@ import React, { useState } from 'react';
 import { 
   X, 
   Server, 
-  ShieldCheck, 
   RefreshCw,
   Database,
   Layers,
-  Sparkles,
-  CheckCircle2
+  CheckCircle2,
+  Code
 } from 'lucide-react';
-import { ramenMcpClient } from '../services/mcpClient';
+import { ramenMcpClient, MCP_CONFIG } from '../services/mcpClient';
 import { McpServerStatus } from '../types/ramen';
 
 interface McpStatusModalProps {
@@ -37,7 +36,7 @@ export const McpStatusModal: React.FC<McpStatusModalProps> = ({
     try {
       await ramenMcpClient.ping();
       const elapsed = Math.round(performance.now() - start);
-      setPingResult(`Success: Pong response in ${elapsed}ms`);
+      setPingResult(`Success: Pong received in ${elapsed}ms`);
       onRefreshStatus();
     } catch (err: any) {
       setPingResult(`Ping failed: ${err.message}`);
@@ -61,10 +60,10 @@ export const McpStatusModal: React.FC<McpStatusModalProps> = ({
             <Server className="w-5 h-5 text-amber-500" />
             <div>
               <h2 className="text-base font-bold text-stone-100">
-                Gachi-Ramen MCP Connection (Free Tier)
+                japan-ramen MCP Server
               </h2>
               <p className="text-[11px] text-stone-400">
-                Official No-Auth Free Service for 62,000+ Japanese Ramen Shops
+                Live Protocol Connection & Data Status
               </p>
             </div>
           </div>
@@ -78,39 +77,36 @@ export const McpStatusModal: React.FC<McpStatusModalProps> = ({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
-          {/* Active Free Tier Service Card */}
+          {/* Active Server Configuration Block */}
           <div className="p-4 rounded-xl bg-stone-950/70 border border-stone-800 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-stone-400 uppercase tracking-wider">
-                Active Service Engine
+              <span className="text-xs font-bold text-stone-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Code className="w-3.5 h-3.5 text-amber-500" />
+                Active MCP Server Config
               </span>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                Free Tier Live & Connected
+                Connected
               </span>
             </div>
 
-            <div className="space-y-2 text-xs">
-              <div className="flex flex-col gap-0.5">
-                <span className="text-stone-400">Live Free-Tier Endpoint:</span>
-                <span className="font-mono text-stone-200 break-all bg-stone-900 p-2 rounded border border-stone-800 select-all">
-                  https://ramen.gachi-tokusuru.com/mcp
-                </span>
+            {/* Display exact JSON snippet */}
+            <pre className="p-3 rounded-lg bg-stone-900 border border-stone-800 font-mono text-xs text-amber-300 overflow-x-auto select-all">
+{JSON.stringify(MCP_CONFIG, null, 2)}
+            </pre>
+
+            <div className="grid grid-cols-2 gap-2 pt-1 text-xs">
+              <div className="bg-stone-900 p-2.5 rounded-lg border border-stone-800">
+                <div className="text-[10px] text-stone-400 uppercase">Server Key</div>
+                <div className="font-bold text-stone-100 font-mono">
+                  {status.serverName}
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                <div className="bg-stone-900 p-2.5 rounded-lg border border-stone-800">
-                  <div className="text-[10px] text-stone-400 uppercase">Service Plan</div>
-                  <div className="text-xs font-bold text-amber-400">
-                    Free Tier (No Auth)
-                  </div>
-                </div>
-
-                <div className="bg-stone-900 p-2.5 rounded-lg border border-stone-800">
-                  <div className="text-[10px] text-stone-400 uppercase">Latency</div>
-                  <div className="text-xs font-bold text-emerald-400 font-mono">
-                    {status.latencyMs !== null ? `${status.latencyMs} ms` : 'Active'}
-                  </div>
+              <div className="bg-stone-900 p-2.5 rounded-lg border border-stone-800">
+                <div className="text-[10px] text-stone-400 uppercase">Ping Latency</div>
+                <div className="font-bold text-emerald-400 font-mono">
+                  {status.latencyMs !== null ? `${status.latencyMs} ms` : 'Active'}
                 </div>
               </div>
             </div>
@@ -138,28 +134,28 @@ export const McpStatusModal: React.FC<McpStatusModalProps> = ({
           <div className="p-4 rounded-xl bg-stone-950/70 border border-stone-800 space-y-2.5">
             <div className="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider">
               <Database className="w-4 h-4 text-amber-500" />
-              <span>Free Dataset Status & Coverage</span>
+              <span>Dataset Freshness</span>
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="p-2.5 rounded bg-stone-900 border border-stone-800">
-                <div className="text-[10px] text-stone-400">Dataset Build</div>
+                <div className="text-[10px] text-stone-400">Data Build Date</div>
                 <div className="font-bold text-stone-200 font-mono">2026-09-26</div>
               </div>
 
               <div className="p-2.5 rounded bg-stone-900 border border-stone-800">
-                <div className="text-[10px] text-stone-400">Total Store Records</div>
-                <div className="font-bold text-amber-400 font-mono">62,000+ Nationwide</div>
+                <div className="text-[10px] text-stone-400">Nationwide Stores</div>
+                <div className="font-bold text-amber-400 font-mono">62,000+ Verified</div>
               </div>
 
               <div className="p-2.5 rounded bg-stone-900 border border-stone-800">
-                <div className="text-[10px] text-stone-400">Prefecture Coverage</div>
+                <div className="text-[10px] text-stone-400">Prefectures</div>
                 <div className="font-bold text-stone-200">All 47 Prefectures</div>
               </div>
 
               <div className="p-2.5 rounded bg-stone-900 border border-stone-800">
                 <div className="text-[10px] text-stone-400">Liveness Tracking</div>
-                <div className="font-bold text-emerald-400">Monthly Re-crawl</div>
+                <div className="font-bold text-emerald-400">Monthly Rolling Crawl</div>
               </div>
             </div>
           </div>
@@ -168,7 +164,7 @@ export const McpStatusModal: React.FC<McpStatusModalProps> = ({
           <div className="p-4 rounded-xl bg-stone-950/70 border border-stone-800 space-y-2.5">
             <div className="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider">
               <Layers className="w-4 h-4 text-amber-500" />
-              <span>Active Free Tools Available</span>
+              <span>Supported Tools</span>
             </div>
 
             <div className="space-y-1.5 text-xs">
@@ -177,7 +173,7 @@ export const McpStatusModal: React.FC<McpStatusModalProps> = ({
                 <div>
                   <div className="font-mono font-bold text-stone-200">search_ramen</div>
                   <div className="text-stone-400 text-[11px]">
-                    Geo-radius query by lat/lng, walking distance, keito lineage, and shop name matching.
+                    Geo-radius coordinates query with distance calculation, style lineage, and shop name matching.
                   </div>
                 </div>
               </div>
@@ -187,7 +183,7 @@ export const McpStatusModal: React.FC<McpStatusModalProps> = ({
                 <div>
                   <div className="font-mono font-bold text-stone-200">vibe_search</div>
                   <div className="text-stone-400 text-[11px]">
-                    Semantic craving search via bge-m3 embeddings (English & Japanese food descriptors).
+                    Semantic craving search via multilingual embeddings.
                   </div>
                 </div>
               </div>
@@ -197,7 +193,7 @@ export const McpStatusModal: React.FC<McpStatusModalProps> = ({
                 <div>
                   <div className="font-mono font-bold text-stone-200">get_ramen_shop</div>
                   <div className="text-stone-400 text-[11px]">
-                    Lookup official address, nearest train station exit distance, and style taxonomy.
+                    Lookup official address, nearest station distance, and style taxonomy.
                   </div>
                 </div>
               </div>

@@ -1,7 +1,15 @@
 import { RamenShop, McpServerStatus } from '../types/ramen';
 
-const SMITHERY_ENDPOINT = 'https://server.smithery.ai/eng213035/gachi-ramen';
-const LIVE_ENGINE_ENDPOINT = 'https://ramen.gachi-tokusuru.com/mcp';
+// MCP server configuration
+export const MCP_CONFIG = {
+  mcpServers: {
+    'japan-ramen': {
+      url: 'https://ramen.gachi-tokusuru.com/mcp'
+    }
+  }
+};
+
+const JAPAN_RAMEN_ENDPOINT = MCP_CONFIG.mcpServers['japan-ramen'].url;
 
 export interface SearchRamenArgs {
   lat?: number;
@@ -26,51 +34,27 @@ export interface VibeSearchArgs {
 }
 
 class RamenMcpClient {
-  private activeProvider: 'smithery' | 'live-engine' = 'smithery';
-  private smitheryToken: string = '';
+  private serverName: string = 'japan-ramen';
+  private endpoint: string = JAPAN_RAMEN_ENDPOINT;
   private lastLatency: number | null = null;
   private lastConnected: boolean = false;
   private totalMatchedShops: number = 62000;
   private lastError: string | null = null;
 
-  constructor() {
-    if (typeof window !== 'undefined') {
-      this.smitheryToken = localStorage.getItem('smithery_api_token') || '';
-    }
-  }
-
-  public setSmitheryToken(token: string) {
-    this.smitheryToken = token.trim();
-    if (typeof window !== 'undefined') {
-      if (token) {
-        localStorage.setItem('smithery_api_token', this.smitheryToken);
-      } else {
-        localStorage.removeItem('smithery_api_token');
-      }
-    }
-  }
-
-  public getSmitheryToken(): string {
-    return this.smitheryToken;
-  }
-
   public getStatus(): McpServerStatus {
     return {
-      endpoint: this.activeProvider === 'smithery' ? SMITHERY_ENDPOINT : LIVE_ENGINE_ENDPOINT,
-      provider: this.activeProvider,
+      serverName: this.serverName,
+      endpoint: this.endpoint,
       connected: this.lastConnected,
       latencyMs: this.lastLatency,
       totalMatched: this.totalMatchedShops,
       lastChecked: new Date().toLocaleTimeString(),
-      smitheryTokenConfigured: Boolean(this.smitheryToken),
       error: this.lastError
     };
   }
 
   /**
-   * Executes an MCP tool call via JSON-RPC 2.0.
-   * Tries the primary Smithery endpoint first (if token provided or desired),
-   * and transparently falls back to the live engine if 401 or network issue occurs.
+   * Executes a tool call on the japan-ramen MCP server via JSON-RPC 2.0
    */
   public async callTool<T = any>(toolName: string, args: Record<string, any>): Promise<T> {
     const startTime = performance.now();
@@ -84,49 +68,21 @@ class RamenMcpClient {
       }
     };
 
-    // If Smithery token is set, attempt Smithery endpoint first
-    if (this.smitheryToken) {
-      try {
-        const response = await fetch(SMITHERY_ENDPOINT, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.smitheryToken}`,
-            Accept: 'application/json'
-          },
-          body: JSON.stringify(payload)
-        });
-
-        if (response.ok) {
-          const json = await response.json();
-          this.activeProvider = 'smithery';
-          this.lastConnected = true;
-          this.lastLatency = Math.round(performance.now() - startTime);
-          this.lastError = null;
-          return this.parseToolResult<T>(json);
-        }
-      } catch (err: any) {
-        console.warn('Smithery call failed, falling back to direct MCP engine:', err);
-      }
-    }
-
-    // Default or fallback to live Gachi-Ramen MCP server
     try {
-      const response = await fetch(LIVE_ENGINE_ENDPOINT, {
+      const response = await fetch(this.endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Accept: 'application/json'
+          Accept: 'application/json, text/event-stream'
         },
         body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
-        throw new Error(`MCP Server responded with HTTP ${response.status}`);
+        throw new Error(`japan-ramen MCP responded with HTTP ${response.status}`);
       }
 
       const json = await response.json();
-      this.activeProvider = 'live-engine';
       this.lastConnected = true;
       this.lastLatency = Math.round(performance.now() - startTime);
       this.lastError = null;
@@ -144,7 +100,6 @@ class RamenMcpClient {
       throw new Error(json.error.message || 'MCP Error');
     }
 
-    // Gachi-Ramen MCP returns result.structuredContent or stringified JSON in result.content[0].text
     if (json.result?.structuredContent) {
       return json.result.structuredContent as T;
     }
@@ -204,7 +159,7 @@ class RamenMcpClient {
   }
 
   /**
-   * Natural-language vibe & craving search
+   * Natural-language semantic craving search
    */
   public async vibeSearch(params: VibeSearchArgs): Promise<{ shops: RamenShop[]; count: number }> {
     const result = await this.callTool<{ shops: RamenShop[]; count: number }>(
